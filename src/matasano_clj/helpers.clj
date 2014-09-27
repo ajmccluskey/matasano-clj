@@ -21,7 +21,10 @@
 (defn fixed-xor [a b]
   "Set 1 - Challenge 2. Bitwise xor 2 equal length buffers."
   (assert (= (count a) (count b)))
+  (map bit-xor a b))
+
+(defn fixed-xor-hex-strings [a b]
+  (assert (= (count a) (count b)))
   (let [bytes-a (hex-string-to-bytes a)
-        bytes-b (hex-string-to-bytes b)
-        xored-bytes (map bit-xor bytes-a bytes-b)]
-    (bytes-to-hex-string xored-bytes)))
+        bytes-b (hex-string-to-bytes b)]
+    (bytes-to-hex-string (fixed-xor bytes-a bytes-b))))
