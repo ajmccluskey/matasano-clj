@@ -13,7 +13,10 @@
          (fixed-xor-hex-strings "1c0111001f010100061a024b53535009181c"
                                 "686974207468652062756c6c277320657965"))))
 
-(deftest bytes-to-hex-string-padding
-  (testing "hex strings created from byte seqs should 0 pad each byte to
-           preserve byte values")
-  (is (= "021b04" (bytes-to-hex-string (map byte '(2 27 4))))))
+(deftest bytes-to-hex-string-conversions
+  (testing "Make sure we can convert correctly between hex strings and byte seqs")
+  (let [s "021b04"]
+    ; Hex strings created from byte seqs should 0 pad each byte to preserve byte values
+    (is (= s (bytes-to-hex-string (map byte '(2 27 4)))))
+    ; We should get the same string back after going from hex -> byte seq -> hex
+    (is (= s (bytes-to-hex-string (hex-string-to-bytes s))))))
