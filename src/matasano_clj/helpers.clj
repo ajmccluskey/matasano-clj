@@ -11,7 +11,7 @@
 
 (defn bytes-to-hex-string [coll]
   "Output a string of hex characters representing the given collection of bytes."
-  (reduce str (map #(format "%x" %) coll)))
+  (reduce str (map #(format "%02x" %) coll)))
 
 (defn convert-hex-to-b64 [s]
   "Set1 - Challenge 1. Converts a string of hexadecimal digits to a base64

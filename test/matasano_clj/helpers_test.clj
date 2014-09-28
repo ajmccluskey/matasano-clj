@@ -12,3 +12,8 @@
   (is (= "746865206b696420646f6e277420706c6179"
          (fixed-xor-hex-strings "1c0111001f010100061a024b53535009181c"
                                 "686974207468652062756c6c277320657965"))))
+
+(deftest bytes-to-hex-string-padding
+  (testing "hex strings created from byte seqs should 0 pad each byte to
+           preserve byte values")
+  (is (= "021b04" (bytes-to-hex-string (map byte '(2 27 4))))))
