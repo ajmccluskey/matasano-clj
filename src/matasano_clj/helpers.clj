@@ -20,7 +20,6 @@
 
 (defn fixed-xor [a b]
   "Set 1 - Challenge 2. Bitwise xor 2 equal length buffers."
-  (assert (= (count a) (count b)))
   (map bit-xor a b))
 
 (defn fixed-xor-hex-strings [a b]
