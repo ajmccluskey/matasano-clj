@@ -1,5 +1,6 @@
 (ns matasano-clj.helpers
-  (:require [clojure.data.codec.base64 :as b64]))
+  (:require [clojure.data.codec.base64 :as b64]
+            clojure.set))
 
 (defn hex-string-to-bytes [s]
   "Convert a character string to the seq of bytes it represents. String
@@ -27,3 +28,10 @@
   (let [bytes-a (hex-string-to-bytes a)
         bytes-b (hex-string-to-bytes b)]
     (bytes-to-hex-string (fixed-xor bytes-a bytes-b))))
+
+(defn apply-to-corresponding-map-vals [f a b]
+  "Applies f to each pair of values in a and b that share the same key and
+  returns the sequence of results."
+  (let [shared-keys (clojure.set/intersection (set (keys a))
+                                              (set (keys b)))]
+    (map #(f (a %) (b %)) shared-keys)))

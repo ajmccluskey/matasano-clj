@@ -20,3 +20,7 @@
     (is (= s (bytes-to-hex-string (map byte '(2 27 4)))))
     ; We should get the same string back after going from hex -> byte seq -> hex
     (is (= s (bytes-to-hex-string (hex-string-to-bytes s))))))
+
+(deftest combine-map-vals
+  (is (= #{11 12 13}
+         (set (apply-to-corresponding-map-vals + {:a 1 :b 3 :c 1 :d 10} {:b 8 :c 11 :d 3})))))
