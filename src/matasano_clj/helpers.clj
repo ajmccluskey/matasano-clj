@@ -2,6 +2,10 @@
   (:require [clojure.data.codec.base64 :as b64]
             clojure.set))
 
+; Integers are signed, so the range of integers that will fit into a byte are
+; from -128 to 127.
+(def all-bytes (map byte (range -128 128)))
+
 (defn hex-string-to-bytes [s]
   "Convert a character string to the seq of bytes it represents. String
   must be in hex and contain an even number of characters."
@@ -35,3 +39,7 @@
   (let [shared-keys (clojure.set/intersection (set (keys a))
                                               (set (keys b)))]
     (map #(f (a %) (b %)) shared-keys)))
+
+(defn char-from-byte [b]
+  "Returns the character for the given byte"
+  (char (if (< b 0) (+ 127 (Math/abs b)) b)))
