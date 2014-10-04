@@ -18,10 +18,71 @@
   "Output a string of hex characters representing the given collection of bytes."
   (reduce str (map #(format "%02x" %) coll)))
 
+(defn byte-to-base64-char [i]
+  "Returns the base64 encoding for the given integer"
+  (assert (or (nil? i) (< i 64)))
+  (cond
+    ; nils are padding bytes - output = in line with wiki explanation
+    (nil? i) \=
+    ; First 26 numbers are capital letters A-Z
+    (< i 26) (char (+ i 65))
+    (< i 52) (char (+ (- i 26) 97))
+    (< i 62) (char (+ (- i 52) 48))
+    (= i 62) \+
+    (= i 63) \/))
+
+(defn next-base64 [bite overflow next-overflow-size]
+  "Takes a byte, overflow, and the size of the next top, and returns the next
+  base64 character to be output."
+  (let [left-mask (bit-shift-left 0xff next-overflow-size)
+        left-bits (bit-and left-mask bite)
+        b64-bits-no-overflow (bit-shift-right left-bits next-overflow-size)]
+    (bit-or b64-bits-no-overflow overflow)))
+
+(defn next-overflow [bite next-overflow-size]
+  (let [mask (bit-shift-right 0xff (- 8 next-overflow-size))
+        bits (bit-and mask bite)]
+    (bit-shift-left bits (- 6 next-overflow-size))))
+
+(defn three-bytes-to-base64-bytes [coll]
+  "Takes a triplet of bytes and returns the corresponding base64 bytes. nil
+  bytes are output as \\=, as per base64 padding rules on Wikipedia. For
+  example, one byte and 2 nils will output 2 chars for the byte, and two \\= 
+  characters as padding bytes."
+  (assert (<= (count coll) 3))
+  (if (empty? coll)
+    '()
+    ; Any non-significant trailing bytes are output as '='. Note this is BYTES,
+    ; not groups of 6 bits.
+    (let [padding (cond (= (count coll) 1) '(nil nil)
+                        (= (count coll) 2) '(nil)
+                        :else '())]
+      (loop [bytez coll
+             base64 '()
+             overflow 0
+             next-overflow-size 2]
+        (if (empty? bytez)
+          ; No bytes left? Spit out what we have, including overflow.
+          (apply conj padding (cons overflow base64))
+
+          (let [base64-byte (next-base64 (first bytez) overflow next-overflow-size)]
+            (recur (rest bytez)
+                   (cons base64-byte base64)
+                   (next-overflow (first bytez) next-overflow-size)
+                   (+ next-overflow-size 2))))))))
+
+(defn bytes-to-base64-chars [coll]
+  "Takes a collection of bytes and returns a base64 string. String is padded
+  according to standard base64 padding rulles."
+  ; Work in groups of 3 so that our padding is accurate
+  (let [byte-triplets (partition-all 3 coll)
+        base64-bytes (flatten (map three-bytes-to-base64-bytes byte-triplets))]
+    (map byte-to-base64-char base64-bytes)))
+
 (defn convert-hex-to-b64 [s]
   "Set1 - Challenge 1. Converts a string of hexadecimal digits to a base64
   encoded string. hex must have an even length"
-  (String. (b64/encode (byte-array (hex-string-to-bytes s)))))
+  (reduce str (bytes-to-base64-chars (hex-string-to-bytes s))))
 
 (defn fixed-xor [a b]
   "Set 1 - Challenge 2. Bitwise xor 2 equal length buffers."

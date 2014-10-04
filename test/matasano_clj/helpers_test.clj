@@ -24,3 +24,39 @@
 (deftest combine-map-vals
   (is (= #{11 12 13}
          (set (apply-to-corresponding-map-vals + {:a 1 :b 3 :c 1 :d 10} {:b 8 :c 11 :d 3})))))
+
+(deftest byte-to-base64
+  (is (= \A) (byte-to-base64-char 0))
+  (is (= \Z) (byte-to-base64-char 25))
+  (is (= \a) (byte-to-base64-char 26))
+  (is (= \z) (byte-to-base64-char 51))
+  (is (= \0) (byte-to-base64-char 52))
+  (is (= \9) (byte-to-base64-char 61))
+  (is (= \+) (byte-to-base64-char 62))
+  (is (= \/) (byte-to-base64-char 63))
+  (is (= \=) (byte-to-base64-char nil)))
+
+(deftest three-bytes-to-base64-bytes-test
+  ; (00000011 00111101 00111110) => (00000000 00110011 00110100 00111110)
+  (is (= (map byte '(0 51 52 62))
+         (three-bytes-to-base64-bytes (map byte '(3 61 62)))))
+  ; Test padding works - missing input bytes are output as nils
+  ; (00000100) => (00000100 nil nil)
+  (is (= '(1 0 nil nil)
+         (three-bytes-to-base64-bytes (map byte '(4))))))
+
+(deftest next-base64-test
+  (is (= (byte 2r00001100))
+      (next-base64 (byte 2r00110011) (byte 0) 2))
+  (is (= (byte 2r00111110))
+      ; -17's 8 LSB are 11101111
+      (next-base64 (byte -17) (byte 2r00110000) 4)))
+
+(deftest next-overflow-test
+  (is (= (byte 2r00110000)
+         (next-overflow (byte 2r00000011) 2)
+         ))
+
+  ; (byte -16) => 11110000
+  (is  (= (byte 2r00111100)
+          (next-overflow (byte 2r01001111) 4))))
