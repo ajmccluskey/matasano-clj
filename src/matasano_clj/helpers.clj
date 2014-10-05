@@ -1,6 +1,5 @@
 (ns matasano-clj.helpers
-  (:require [clojure.data.codec.base64 :as b64]
-            clojure.set))
+  (:require clojure.set))
 
 ; Integers are signed, so the range of integers that will fit into a byte are
 ; from -128 to 127.
